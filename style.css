@@ -1,0 +1,59 @@
+/* NAVBAR STYLING */
+.navbar{
+    background-image: linear-gradient(rgb(148, 148, 148),rgb(189, 189, 189),rgb(148, 148, 148));
+    height: 60px;
+}
+
+.navbar-brand {
+    background-color: rgba(30, 115, 155, 0.479);
+    height: 60px;
+}
+
+.n-questions-list {
+    position: absolute;
+}
+
+
+
+/* QUESTION OPTIONS STYLING */
+.q-options-correct{
+    color: green;
+}
+
+.q-options-incorrect{
+    color: red;
+}
+
+.q-answer-icon{
+    margin-left: 0.5rem;
+}
+
+
+
+/* QUESTION CARD STYLING */
+.card{
+    background-color: rgb(182, 182, 182);
+    margin-top: 2rem;
+    min-height: 200px;
+    width: 900px;
+}
+
+.card-title{
+    background-image: linear-gradient(rgb(41, 121, 153),rgb(52, 150, 189),rgb(41, 121, 153));
+    padding: 0.75rem 0 0.75rem 1.5rem;
+    font-weight: bold;
+}
+
+.card ol {
+    padding: 0.5rem 0rem 2rem 0.2rem;
+    margin: 0 0 0 2rem;
+}
+
+.card li{
+    font-weight: bold;
+    font-size: large;
+    margin: 0.5rem 0 0.5rem 0;
+    padding: 0.15rem 0 0.15rem 0.15rem;
+}
+
+
