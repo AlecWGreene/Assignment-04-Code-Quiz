@@ -123,6 +123,7 @@ function TestQuestion(){
 
     DisplayQuestion(test_question);
 }
+TestQuestion();
 
 // ========== VARIABLES ==========
 var icon_circle_class = "far fa-circle";
