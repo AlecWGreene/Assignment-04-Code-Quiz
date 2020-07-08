@@ -40,6 +40,16 @@
     color: red;
 }
 
+/* TIMER STYLING */
+#quiz-timer{
+    background-image: linear-gradient(rgb(148, 148, 148),rgb(206, 205, 205),rgb(148, 148, 148));
+    color: black;
+    font-size: 25px;
+    text-align: center;
+    padding: auto;
+    font-weight: bolder;
+}
+
 /* PAGE STYLING */
 body {
     background-color: rgb(99, 132, 136);

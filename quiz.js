@@ -165,24 +165,40 @@ function HandleOptionClick(event){
             $(t_element).children("i").addClass(icon_circle_cross_class);
         }
 
-        //TODO: fix when user answers last question
         // Display next unanswered question
         var t_answered_count = 0;
-        for(let i = t_question.m_id + 1; i < questionArray.length; i++){
-            // If the question hasn't been answered, display it
-            if(questionArray[i].m_status === 0){
-                DisplayQuestion(questionArray[i]);
+        var t_index = t_question.m_id + 1;
+        while(t_answered_count < questionArray.length){
+
+            // If the question at t_index hasn't been answered
+            if(questionArray[t_index] != null && questionArray[t_index].m_status === 0){
+                //Display question
+                DisplayQuestion(questionArray[t_index]);
+
+                // Get the nav item corresponding to the displayed question
+                var t_nav_item = $(".n-question-item").filter(function(a_index){
+                    return a_index === questionArray[t_index].m_id;
+                });
+
+                // Shift the nav items so that the displayed question's nav item is first
+                var t_x_offset = t_nav_item.offset().left - global_startX;
+                $(".n-question-list").offset({left: ($(".n-question-list").offset().left - t_x_offset + 137.5)});
                 break;
             }
-            // Else if every question hasn't been checked and the end of the list has been reached
-            else if(t_answered_count != questionArray.length && i === questionArray.length - 1){
-                i = 0;
+            // Else if the end of the array is reached
+            else if(t_index >= questionArray.length - 1){
+                t_index = -1;
             }
+            // Else display the end screen 
             else{
-                // TODO: put endscreen here
-                break;
+                // TODO: display end screen
             }
+
+            // Increment helper variables
+            t_index++;
+            t_answered_count++;
         }
+
     }
 }
 
@@ -344,6 +360,86 @@ var quiz_easyArray = [new Question("Which of the following is a valid Javascript
                                       "",
                                       "",
                                       ""], 3)];
+
+
+
+   
+// ========== TIMER FUNCTIONS ==========
+
+/** The timer element for the quiz */
+var timerElement = $("#quiz-timer");
+
+/**
+ * Create the DOM elements for the timer
+ * 
+ * @returns {void}
+ */
+function InitTimer(){
+    // Insert a div for the quiz-timer
+    $("<div>").attr("id","quiz-timer").css("position","absolute").insertAfter($(".navbar"));
+    
+    // Format the quiz timer div
+    $("#quiz-timer").width($(".navbar-brand").width()).height($(".navbar-brand").outerHeight()).css("padding-top", 0.15 * $("#quiz-timer").height())
+    
+    // Shift the quiz timer div to the left so that it's under the brand
+    $("#quiz-timer").offset({left: 0.5 * ($(".navbar-brand").innerWidth() - $(".navbar-brand").width())});
+}
+
+/**
+ * Starts a timer from a_duration, calling a function when the time runs out
+ * 
+ * @param {Number} a_duration The time in seconds to run the timer for
+ * 
+ * @param {Function} a_callback The function to call when the time reaches 0
+ * 
+ * @returns {void}
+ */
+function StartTimer(a_duration, a_callback){
+    // Store the duration of the timer
+    StartTimer.time = a_duration;
+    DisplayTimerText(a_duration);
+
+    /** Counts down from a_duration then calls a_callback */
+    var t_timerInterval = setInterval( function(){
+        // Countdown 1 second
+        DisplayTimerText(StartTimer.time);
+        StartTimer.time--;
+        
+
+        // If the timer has reached below 0 trigger callback function and clear interval
+        if(StartTimer.time < 0){
+            a_callback();
+            clearInterval(t_timerInterval);
+        }
+
+    },1000);
+}
+
+/**
+ * Display a_time in the timer element as a string of "minutes : seconds"
+ * 
+ * @param {Number} a_time The time in seconds to display
+ * 
+ * @returns {void}
+ */
+function DisplayTimerText(a_time){
+    // Calculate the minutes and seconds of the time
+    var t_minutes = Math.floor(a_time / 60);
+    var t_seconds = Math.floor(a_time) % 60;
+
+    // Change the text of the timer
+    // THE FUCK $(timerElement).text(t_minutes.toString() + " : " + t_seconds.toString());
+    $("#quiz-timer").text(t_minutes.toString() + " : " + ((t_seconds >= 10)?"":"0") + t_seconds.toString());
+}
+
+function SubtractTime(a_amount){
+    StartTimer.time -= a_amount;
+    // $("#quiz-timer").css("color","red");
+    // setTimeout(function(){ $("#quiz-timer").css("color","black") }, 1000);
+    
+    $("#quiz-timer").animate({color: "#aa0000"}, 1000);
+}
+
 
 // ========== TEST FUNCTIONS ==========
 

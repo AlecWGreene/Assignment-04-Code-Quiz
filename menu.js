@@ -66,6 +66,8 @@ function EnableScrollableElement(a_element){
     /** Variables to help track the mouse and element position */
     var startX = 0, deltaX = 0;
 
+    var t_item = null;
+
     // Add event listener
     $(a_element).on("mousedown", HandleMouseMovement);
 
@@ -258,6 +260,11 @@ function DisplayMenu(){
 
 }
 
+function DisplayEndCard(){
+    // Detach any existing cards
+    $(".card").detach();
+}
+
 /**
  * A method to call appropriate functions when a menu button is clicked
  * 
@@ -291,11 +298,20 @@ function HandleMenuClick(a_event){
                 }
             }
 
+            // If there are more than 9 elements, allow user to scroll the question list
             if(questionArray.length > 9){
                 EnableScrollableElement($(".n-question-list"));
             }
 
+            // Display the first question
             DisplayQuestion(questionArray[0]);
+
+            // Initialize the timer
+            InitTimer();
+
+            // Start the timer
+            var t_time = (10 + 5 * quiz_difficulty) * questionArray.length;
+            StartTimer(t_time, DisplayEndCard);
         }
     }
 }
@@ -315,5 +331,5 @@ function HandleSliderChange(a_event){
     $("#length-span").text(quiz_length);
 }
 
-// TODO: add document.on(ready)
-DisplayMenu();
+// When the document loads
+$( document ).ready(DisplayMenu);
