@@ -3,20 +3,42 @@
     background-image: linear-gradient(rgb(148, 148, 148),rgb(206, 205, 205),rgb(148, 148, 148));
     height: 60px;
     padding-left: 0px;
+    overflow: hidden;
 }
 
 .navbar-brand {
+    color: black;
+    font-weight: bolder;
     background-image: linear-gradient(rgb(41, 121, 153),rgb(57, 172, 218),rgb(41, 121, 153));
     height: 60px;
     padding: 15px 30px 10px 20px;
     margin-left: 0px;
+    z-index: 3;
 }
 
-.n-questions-list {
-    position: absolute;
+.n-question-list {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
+.n-question-item {
+    height: 100%;
+    min-height: 60px;
+    min-width: 120px;  
+    width: max-content;  
+    margin: 0px 10px 0px 10px;
+    padding: 15px 7.5px 10px 7.5px; 
+}
 
+.fa-check-circle {
+    color: green;
+}
+
+.fa-times-circle {
+    color: red;
+}
 
 /* PAGE STYLING */
 body {
@@ -26,6 +48,20 @@ body {
 .container {
     padding: 40px 15px 20px 15px;
 }
+
+
+/* Menu Styling */
+.menu-section {
+    padding: 1rem 0 0 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.btn-difficulty {
+    width: 200px;
+}
+
 
 
 
@@ -46,16 +82,18 @@ body {
 
 /* QUESTION CARD STYLING */
 .card{
-    background-color: rgb(182, 182, 182);
     background-image: linear-gradient(to bottom,rgb(202, 201, 201),rgb(160, 159, 159));
     margin-top: 2rem;
+    padding-bottom: 2rem;
     min-height: 200px;
+    height: min-content;
     width: 900px;
 }
 
 .card-title{
-    background-image: linear-gradient(rgb(41, 121, 153),rgb(58, 165, 207),rgb(41, 121, 153));
+    background-image: linear-gradient(rgb(41, 121, 153),rgb(57, 172, 218),rgb(41, 121, 153));
     padding: 0.75rem 0 0.75rem 1.5rem;
+    margin: -1px;
     font-weight: bold;
 }
 
@@ -68,7 +106,7 @@ body {
     font-weight: bold;
     font-size: large;
     margin: 0.5rem 0 0.5rem 0;
-    padding: 0.15rem 0 0.15rem 0.15rem;
+    padding: 0.3rem 0 0.15rem 0.15rem;
 }
 
 
