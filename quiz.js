@@ -47,6 +47,13 @@ class Question{
         this.m_difficulty = a_difficulty;
     }   
 
+    /**
+     * Mark the question as answered
+     * 
+     * @param {Number} a_answer An integer representing the user's selction
+     * 
+     * @returns {void}
+     */
     CollectAnswer(a_answer){
         this.m_selection = a_answer;
 
@@ -56,6 +63,17 @@ class Question{
         else{
             this.m_status = -1;
         }
+    }
+
+    /**
+     * Resets the timer object
+     * 
+     * @returns {void}
+     */
+    Reset(){
+        this.m_status = 0;
+        this.m_selection = -1;
+        this.m_id
     }
 }
 

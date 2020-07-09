@@ -215,8 +215,8 @@ function HandleNavItemClick(a_event){
 // ========== MENU FUNCTIONS ==========
 /** An array of UserScore objects representing the high scores */
 var highScores = [];
-/** Initialize high score array in local storage */
-localStorage.setItem("highScoreArray",JSON.stringify([["Name", "Difficulty", "Score"]]));
+/** Initialize high score array in session storage */
+sessionStorage.setItem("highScoreArray",JSON.stringify([["Name", "Difficulty", "Score"]]));
 /** The quiz timer */
 var quiz_timer = null;
 
@@ -279,13 +279,13 @@ class UserScore{
 }
 
 /**
- * Grabs the high scores from local storage and puts them into a html table
+ * Grabs the high scores from session storage and puts them into a html table
  * 
  * @returns {Element} a table of high scores
  */
 function GetHighScoreTable(){
     /** An array of @see UserScore objects */
-    var t_string_array = JSON.parse(localStorage.getItem("highScoreArray"));
+    var t_string_array = JSON.parse(sessionStorage.getItem("highScoreArray"));
 
     /** The html table */
     var t_table = $("<table>");
@@ -309,7 +309,7 @@ function GetHighScoreTable(){
 }
 
 /**
- * Updates the local storage variable highScoreArray with a new score
+ * Updates the session storage variable highScoreArray with a new score
  * 
  * @param {UserScore} a_score The user submitted score
  * 
@@ -319,14 +319,14 @@ function StoreHighScore(a_score){
     // Stringify the user score
     var t_string = JSON.stringify(a_score);
 
-    // Pull the table from local storage
-    var t_string_array = Array.from(JSON.parse(localStorage.getItem("highScoreArray")));
+    // Pull the table from session storage
+    var t_string_array = Array.from(JSON.parse(sessionStorage.getItem("highScoreArray")));
 
     // Add the score to the table
     t_string_array.push(t_string);
 
-    // Update local storage variable
-    localStorage.setItem("highScoreArray", JSON.stringify(t_string_array));
+    // Update session storage variable
+    sessionStorage.setItem("highScoreArray", JSON.stringify(t_string_array));
 }
 
 /**
@@ -540,6 +540,11 @@ function HandleScoreSubmit(a_event){
  */
 function Restart(a_event){
     a_event.preventDefault();
+
+    // Reset all questions
+    for(let i = 0; i < questionArray.length; i++){
+        questionArray[i].Reset();
+    }
 
     questionArray = null;
     $("n-question-list").html("");
