@@ -213,7 +213,127 @@ function HandleNavItemClick(a_event){
 
 
 // ========== MENU FUNCTIONS ==========
+/** An array of UserScore objects representing the high scores */
+var highScores = [];
+/** Initialize high score array in local storage */
+localStorage.setItem("highScoreArray",JSON.stringify([["Name", "Difficulty", "Score"]]));
+/** The quiz timer */
+var quiz_timer = null;
 
+/**
+ * An object representing a quiz attempt
+ * 
+ * @property {String} m_name The name of the user who attempted the quiz
+ * 
+ * @property {Number} m_difficulty The difficulty of the attempt
+ * 
+ * @property {Number} m_score The score the user achieved
+ * 
+ * @method ToTableRow Returns a DOM element consisting of a row made up of the properties
+ */
+class UserScore{
+    constructor(a_name, a_difficulty, a_score){
+        var t_this_object = this;
+        this.m_name = a_name;
+
+        if(typeof(a_difficulty) === "number"){
+            // Store the difficulty as a string
+            switch(a_difficulty){
+                case 0:
+                    t_this_object.m_difficulty = "Easy";
+                    break;
+                case 1:
+                    t_this_object.m_difficulty = "Medium";
+                    break;
+                case 2:
+                    t_this_object.m_difficulty = "Hard";
+                    break;
+                default:
+                    t_this_object.m_difficulty = "NaN";
+                    break;
+            }
+        }
+        else{
+            t_this_object.m_difficulty = a_difficulty;
+        }
+
+        this.m_score = a_score;
+    }
+
+    /**
+     * Turns the object into a row of data
+     * 
+     * @returns {Element} A <tr> tag containing <td> tags with the user properties
+     */
+    ToTableRow(){
+        var t_row = $("<tr>");
+
+        var t_name_td = $("<td>").text(this.m_name.toString());
+        var t_difficulty_td = $("<td>").text(this.m_difficulty.toString());
+        var t_score_td = $("<td>").addClass("td-score").text(this.m_score.toString());
+
+        t_row.append(t_name_td).append(t_difficulty_td).append(t_score_td);
+
+        return t_row;
+    }
+}
+
+/**
+ * Grabs the high scores from local storage and puts them into a html table
+ * 
+ * @returns {Element} a table of high scores
+ */
+function GetHighScoreTable(){
+    /** An array of @see UserScore objects */
+    var t_string_array = JSON.parse(localStorage.getItem("highScoreArray"));
+
+    /** The html table */
+    var t_table = $("<table>");
+
+    /** The html table headers */
+    t_table.append($("<tr>").html("<th> Name </th> <th> Difficulty </th> <th class=\" td-score \"> Score </th>"))
+
+    // For each element in the array
+    for(let i = 1; i < t_string_array.length; i++){
+        // JSON parse the element
+        t_string_array[i] = JSON.parse(t_string_array[i]);
+        
+        // Create a new UserScore object
+        var t_score = new UserScore(t_string_array[i].m_name, t_string_array[i].m_difficulty, t_string_array[i].m_score);
+
+        // Append it as a row
+        t_table.append(t_score.ToTableRow());
+    }
+    
+    return $(t_table);
+}
+
+/**
+ * Updates the local storage variable highScoreArray with a new score
+ * 
+ * @param {UserScore} a_score The user submitted score
+ * 
+ * @returns {void}
+ */
+function StoreHighScore(a_score){
+    // Stringify the user score
+    var t_string = JSON.stringify(a_score);
+
+    // Pull the table from local storage
+    var t_string_array = Array.from(JSON.parse(localStorage.getItem("highScoreArray")));
+
+    // Add the score to the table
+    t_string_array.push(t_string);
+
+    // Update local storage variable
+    localStorage.setItem("highScoreArray", JSON.stringify(t_string_array));
+}
+
+/**
+ * Displays the main menu featuring buttons and input sliders for different quiz options
+ * 
+ * @returns {void}
+ */
 function DisplayMenu(){
     // Detach all current cards
     $(".card").remove();
@@ -245,7 +365,7 @@ function DisplayMenu(){
     var t_header_length = $("<h4>").text("Change the length: ").css("text-align","center").css("font-weight","bold").css("padding-top","2rem");
     t_header_length.append($("<span>").attr("id","length-span"));
     var t_slider = $("<input>").attr("type","range").attr("id","length-slider");
-    $(t_slider).attr("max", 50).attr("min", 1);
+    $(t_slider).attr("max", 13).attr("min", 1);
     $(t_card).append(t_header_length);
     $(t_slider).on("input", HandleSliderChange); $(t_card).append(t_slider);
 
@@ -260,9 +380,56 @@ function DisplayMenu(){
 
 }
 
+/**
+ * Displays a card asking the user for their information 
+ * 
+ * @returns {void}
+ */
 function DisplayEndCard(){
     // Detach any existing cards
     $(".card").detach();
+
+    // Stop timer
+    quiz_timer.StopTimer();
+
+    // Create card DOM element
+    var t_card = $("<div>").addClass("card");
+
+    // Create card title var
+    var t_title = "";
+
+    // Assign an appropriate message to t_title
+    if(quiz_timer.time <= 0){
+        t_title = "Time's Up\!";
+    }
+    else{
+        t_title = "You're all done\!"
+    }
+
+    // Put the title on the card
+    var t_card_title = $("<h3>").addClass("card-title").css("text-align","center");
+    $(t_card_title).text(t_title);
+    t_card.append(t_card_title);
+
+    // Get the high scores and add them to the card
+    var t_div = $("<div>").addClass("body-end");
+    t_div.append(GetHighScoreTable());
+
+    // Create a boostrap text field and button
+    var t_input_group = $("<form>").addClass("input-group").on("submit", HandleScoreSubmit);
+    t_input_group.append($("<div>").addClass("input-group-prepend").append($("<span>").addClass("input-group-text").text("Please enter your name: ")));
+    t_input_group.append($("<input>").attr("type","text"));
+    t_input_group.offset({left: t_input_group.offset().left - 100});
+    t_div.append(t_input_group);
+
+    // Append div to card
+    t_card.append(t_div);
+
+    // Append card to body
+    $("#doc-body").append(t_card);
+
+    // Add restart handler to brand
+    $(".navbar-brand").on("click", Restart);
 }
 
 /**
@@ -307,11 +474,11 @@ function HandleMenuClick(a_event){
             DisplayQuestion(questionArray[0]);
 
             // Initialize the timer
-            InitTimer();
+            var t_time = 5 * (3 - quiz_difficulty) * questionArray.length;
+            quiz_timer = new Timer(t_time);
 
             // Start the timer
-            var t_time = (10 + 5 * quiz_difficulty) * questionArray.length;
-            StartTimer(t_time, DisplayEndCard);
+            quiz_timer.StartTimer(DisplayEndCard);
         }
     }
 }
@@ -329,6 +496,59 @@ function HandleSliderChange(a_event){
     // Set length to the value of the slider
     quiz_length = $("#length-slider").val();
     $("#length-span").text(quiz_length);
+}
+
+/**
+ * When the user hits enter in the text field from the end card, this stores the score
+ * 
+ * @param {Event} a_event The event to be called on input into the text field 
+ * 
+ * @returns {void}
+ */
+function HandleScoreSubmit(a_event){
+    a_event.preventDefault();
+
+    // Get name from text field
+    var t_name = $("input").val();
+
+    // Calculate what percentage of the alloted time was not used
+    var t_time_left = 1 - (quiz_timer.time / (5 * (3 - quiz_difficulty) * questionArray.length));
+
+    // For each question in the array
+    var t_question_score = 0;
+    for(let i = 0; i < questionArray.length; i++){
+        // Add or subtract points based on the status of the question
+        t_question_score += questionArray[i].m_status * (1 + questionArray[i].m_difficulty);
+    }
+
+    // Store the new score
+    var t_score = new UserScore(t_name, quiz_difficulty, t_time_left * t_question_score );
+    StoreHighScore(t_score);
+    $(a_event.target).text("");
+
+    // Add a row to the table
+    var t_row = t_score.ToTableRow();
+    $("table").append(t_row);
+}
+
+/**
+ * Restarts the quiz and displays the starting menu
+ * 
+ * @param {Event} a_event The event of the user clicking on code quiz brand
+ * 
+ * @returns {void}
+ */
+function Restart(a_event){
+    a_event.preventDefault();
+
+    questionArray = null;
+    $("n-question-list").html("");
+    quiz_difficulty = -1;
+    quiz_length = 0;
+
+    quiz_timer = null;
+
+    DisplayMenu();
 }
 
 // When the document loads

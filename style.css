@@ -50,6 +50,40 @@
     font-weight: bolder;
 }
 
+/* TABLE STYLING */
+.body-end {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+table {
+    margin: 25px 0 15px 0;
+}
+
+tr {
+    width: 50%;
+}
+
+td {
+    min-width: 100px;
+    width: max-content;
+}
+
+.td-score{
+    text-align: center;
+}
+
+/* INPUT GROUP STYLING */
+.input-group {
+    width: max-content;
+}
+
+input[type=text]{
+    width: 300px;
+}
+
 /* PAGE STYLING */
 body {
     background-color: rgb(99, 132, 136);

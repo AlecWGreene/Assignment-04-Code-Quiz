@@ -1,7 +1,3 @@
-// ========== DOM ELEMENTS ==========
-
-
-
 // ========== DISPLAY FUNCTIONS ==========
 
 /**
@@ -163,6 +159,9 @@ function HandleOptionClick(event){
             var t_element = GetNavItem(t_question.m_id);
             $(t_element).children("i").removeClass(icon_circle_class);
             $(t_element).children("i").addClass(icon_circle_cross_class);
+
+            // Subtract time from the timer
+            quiz_timer.SubtractTime(timePenalties[quiz_difficulty]);
         }
 
         // Display next unanswered question
@@ -189,14 +188,14 @@ function HandleOptionClick(event){
             else if(t_index >= questionArray.length - 1){
                 t_index = -1;
             }
-            // Else display the end screen 
-            else{
-                // TODO: display end screen
-            }
 
             // Increment helper variables
             t_index++;
             t_answered_count++;
+        }
+
+        if(t_answered_count == questionArray.length){
+            DisplayEndCard();
         }
 
     }
@@ -303,63 +302,63 @@ var quiz_mediumArray = [new Question("How do you declare an anonymous function?"
                                     ["function(){ \/\/ Code goes here }",
                                      "function { \/\/ Code goes here }",
                                      "(){ \/\/ Code goes here }",
-                                     "anon(){ \/\/ Code goes here }"], 0),
+                                     "anon(){ \/\/ Code goes here }"], 0, 1),
                         new Question("What is JSON?", // Medium Question 1
                                     ["A programming language",
                                      "A package for storing Javascript objects",
                                      "A Javascript event",
-                                     "The company who created Javascript"], 1)];
+                                     "The company who created Javascript"], 1, 1)];
 /** The questions to be inserted into easy quizes */
 var quiz_easyArray = [new Question("Which of the following is a valid Javascript function declaration?", // Easy Question 0
                                     ["public void Foo(){ \/\/ Code goes here }",
                                      "Foo(){ \/\/ Code goes here }",
                                      "Foo{ \/\/ Code goes here }",
-                                     "function Foo(){ \/\/ Code goes here }"], 3),
+                                     "function Foo(){ \/\/ Code goes here }"], 3, 0),
                       new Question("Which of the following is NOT a loop", // Easy Question 1
                                     ["foreach",
                                      "for",
                                      "if",
-                                     "while"], 2),
+                                     "while"], 2, 0),
                       new Question("What terminology is used when a function is written into a line of code?", // Easy Question 2
                                     ["The function is called",
                                      "The function is assigned",
                                      "The function is performed",
-                                     "The function is calculated"], 0),
+                                     "The function is calculated"], 0, 0),
                       new Question("What does a script refer to?", // Easy Question 3
                                     ["A Javascript function",
                                      "A Javascript file",
                                      "A Javascript comment",
-                                     "A Javascript delegate"], 1),
+                                     "A Javascript delegate"], 1, 0),
                       new Question("What best describes the reason Javascript is used?", // Easy Question 4
                                     ["To display text and images",
                                      "To get user input",
                                      "To dynamically alter page elements",
-                                     "To improve the pages' aesthetics"], 2),
+                                     "To improve the pages' aesthetics"], 2, 0),
                       new Question("Which option describes how to assign a string to a variable in Javascript?", // Easy Question 6
                                      ["string x = \"\";",
                                       "x = \"\";",
                                       "var x = \"\";",
-                                      "new String(); "], 2),
+                                      "new String(); "], 2, 0),
                       new Question("What does DOM stand for?", // Easy Question 7
                                      ["Document Object Module",
                                       "Document Oriented Model",
                                       "Design Oriented Model",
-                                      "Document Object Model"], 3),
+                                      "Document Object Model"], 3, 0),
                       new Question("Which tag displays the largest text?", // Easy Question 8
                                      ["<h1>",
                                       "<title>",
                                       "<p>",
-                                      "<h4>"], 0),
+                                      "<h4>"], 0, 0),
                       new Question("Which of the follwing is NOT a valid html attribute?", // Easy Question 9
                                      ["class",
                                       "id",
                                       "href",
-                                      "parent"], 3),
-                      new Question("", // Easy Question 9
-                                     ["",
-                                      "",
-                                      "",
-                                      ""], 3)];
+                                      "parent"], 3, 0),
+                      new Question("What is 'document' refer to in Javascript?", // Easy Question 10
+                                     ["The javascript file",
+                                      "The web page DOM element",
+                                      "The css file",
+                                      "The web page JSON element"], 1, 0)];
 
 
 
@@ -368,77 +367,123 @@ var quiz_easyArray = [new Question("Which of the following is a valid Javascript
 
 /** The timer element for the quiz */
 var timerElement = $("#quiz-timer");
+/** The time to be removed from the timer based on difficulty */
+var timePenalties = [2, 4, 8]
 
 /**
- * Create the DOM elements for the timer
+ * A timer for the quiz
+ * 
+ * @property {Number} m_duration The starting time of the timer
+ * 
+ * @property {Number} m_time The current time of the timer
+ * 
+ * @method StartTimer Starts the countdown
+ * 
+ * @method StopTimer Stops the timer 
  * 
  * @returns {void}
  */
-function InitTimer(){
-    // Insert a div for the quiz-timer
-    $("<div>").attr("id","quiz-timer").css("position","absolute").insertAfter($(".navbar"));
+class Timer{
     
-    // Format the quiz timer div
-    $("#quiz-timer").width($(".navbar-brand").width()).height($(".navbar-brand").outerHeight()).css("padding-top", 0.15 * $("#quiz-timer").height())
+    /**
+     * Initializes the properties of the timer and creates the timer card
+     * 
+     * @param {Number} a_duration The starting time 
+     * 
+     * @returns {Timer} An initiated timer
+     */
+    constructor(a_duration){
+        this.m_duration = a_duration;
+        this.m_time = 0;
+
+        // Insert a div for the quiz-timer
+        $("<div>").attr("id","quiz-timer").css("position","absolute").insertAfter($(".navbar"));
     
-    // Shift the quiz timer div to the left so that it's under the brand
-    $("#quiz-timer").offset({left: 0.5 * ($(".navbar-brand").innerWidth() - $(".navbar-brand").width())});
-}
-
-/**
- * Starts a timer from a_duration, calling a function when the time runs out
- * 
- * @param {Number} a_duration The time in seconds to run the timer for
- * 
- * @param {Function} a_callback The function to call when the time reaches 0
- * 
- * @returns {void}
- */
-function StartTimer(a_duration, a_callback){
-    // Store the duration of the timer
-    StartTimer.time = a_duration;
-    DisplayTimerText(a_duration);
-
-    /** Counts down from a_duration then calls a_callback */
-    var t_timerInterval = setInterval( function(){
-        // Countdown 1 second
-        DisplayTimerText(StartTimer.time);
-        StartTimer.time--;
+        // Format the quiz timer div
+        $("#quiz-timer").width($(".navbar-brand").width()).height($(".navbar-brand").outerHeight()).css("padding-top", 0.15 * $("#quiz-timer").height())
         
+        // Shift the quiz timer div to the left so that it's under the brand
+        $("#quiz-timer").offset({left: 0.5 * ($(".navbar-brand").innerWidth() - $(".navbar-brand").width())});
+    }
 
-        // If the timer has reached below 0 trigger callback function and clear interval
-        if(StartTimer.time < 0){
-            a_callback();
-            clearInterval(t_timerInterval);
-        }
+    /**
+     * Stops the timerInterval and hides #quiz-timer
+     * 
+     * @returns {void}
+     */
+    StopTimer(){
+        clearInterval(this.timerInterval);
 
-    },1000);
+        $("#quiz-timer").css("display","none");
+    }
+
+    /**
+     * Display a_time in the timer element as a string of "minutes : seconds"
+     * 
+     * @param {Number} a_time The time in seconds to display
+     * 
+     * @returns {void}
+     */
+    DisplayTimerText(a_time){
+        // Calculate the minutes and seconds of the time
+        var t_minutes = Math.floor(a_time / 60);
+        var t_seconds = Math.floor(a_time) % 60;
+
+        // Change the text of the timer
+        // THE FUCK $(timerElement).text(t_minutes.toString() + " : " + t_seconds.toString());
+        $("#quiz-timer").text(t_minutes.toString() + " : " + ((t_seconds >= 10)?"":"0") + t_seconds.toString());
+    }
+
+    /**
+     * Start the timer and call a function on completion
+     * 
+     * @param {Function} a_callback The function to call on completion of the countdown
+     * 
+     * @returns {void}
+     */
+    StartTimer(a_callback){
+        // Create a holder for the timer object
+        var t_timer = this;
+
+        // Store the duration of the timer
+        this.DisplayTimerText(this.m_duration);
+        this.time = this.m_duration - 1;
+
+        /** Counts down from a_duration then calls a_callback */
+        this.timerInterval = setInterval( function(){
+            // If the timer has reached below 0 trigger callback function and clear interval
+            if(t_timer.time < 0){
+                t_timer.time = 0;
+                a_callback();
+                clearInterval(t_timer.timerInterval);
+            }
+
+            // Countdown 1 second and display time
+            t_timer.DisplayTimerText(t_timer.time);
+            t_timer.time--;
+        },1000);
+    }
+
+    /**
+     * Remove time from the timer and flash the text red for half a second
+     * 
+     * @param {Number} a_amount The time in seconds to remove from the timer
+     * 
+     * @returns {void}
+     */
+    SubtractTime(a_amount){
+        // Remove time from the timer
+        this.time -= a_amount;
+
+        // Color the text for 500ms
+        $("#quiz-timer").css("color","red");
+        setTimeout(function(){ $("#quiz-timer").css("color","black"); }, 500);
+    }
 }
 
-/**
- * Display a_time in the timer element as a string of "minutes : seconds"
- * 
- * @param {Number} a_time The time in seconds to display
- * 
- * @returns {void}
- */
-function DisplayTimerText(a_time){
-    // Calculate the minutes and seconds of the time
-    var t_minutes = Math.floor(a_time / 60);
-    var t_seconds = Math.floor(a_time) % 60;
 
-    // Change the text of the timer
-    // THE FUCK $(timerElement).text(t_minutes.toString() + " : " + t_seconds.toString());
-    $("#quiz-timer").text(t_minutes.toString() + " : " + ((t_seconds >= 10)?"":"0") + t_seconds.toString());
-}
 
-function SubtractTime(a_amount){
-    StartTimer.time -= a_amount;
-    // $("#quiz-timer").css("color","red");
-    // setTimeout(function(){ $("#quiz-timer").css("color","black") }, 1000);
-    
-    $("#quiz-timer").animate({color: "#aa0000"}, 1000);
-}
+
 
 
 // ========== TEST FUNCTIONS ==========
@@ -446,16 +491,26 @@ function SubtractTime(a_amount){
 /**
  * Loads a test question for debugging purposes
  */
-function TestQuestion(){
+function Test(){
+    var u1 = new UserScore("Alec", 2, 21);
+    var u2 = new UserScore("Desare", 2, 15);
+    var u3 = new UserScore("Yuki", 1, 15);
 
+    StoreHighScore(u1);
+    StoreHighScore(u2);
+    StoreHighScore(u3);
+
+    DisplayEndCard();
 }
 
 /**
  * Initializes the quiz and displays the first 
  * 
+ * @param {Number} a_difficulty An integer between 0 and 2 inclusive representing how difficult to make the quiz
  * 
+ * @param {Number} a_number How many questions to give to the user
  * 
- * 
+ * @returns {void}
  */
 function InitQuiz(a_difficulty, a_number){
         // Create an array of questions
