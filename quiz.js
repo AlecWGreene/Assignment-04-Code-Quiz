@@ -110,7 +110,7 @@ function DisplayQuestion(a_question){
         t_option_item.on("click", {t_question: a_question, t_item: t_option_item}, HandleOptionClick);
 
         // Append item to list
-        t_option_list.append(a_question, t_option_item);
+        t_option_list.append(t_option_item);
     }
 
     // Append the list to the page
@@ -539,7 +539,10 @@ function InitQuiz(a_difficulty, a_number){
             questionArray[i].m_id = i;
             AddQuestionItem(i);
         }
-        
-        EnableScrollableElement($(".n-question-list"));
+
+        // Enable the question nav bar to scroll if there are more than 9 of them
+        if($(".n-question.list").children().length >= 10){
+            EnableScrollableElement($(".n-question-list"));
+        }
         DisplayQuestion(questionArray[0]);
 }

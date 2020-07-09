@@ -425,11 +425,11 @@ function DisplayEndCard(){
     // Append div to card
     t_card.append(t_div);
 
-    // Append card to body
-    $("#doc-body").append(t_card);
-
     // Add restart handler to brand
     $(".navbar-brand").on("click", Restart);
+
+    // Append card to body
+    $("#doc-body").append(t_card);
 }
 
 /**
@@ -547,9 +547,11 @@ function Restart(a_event){
     }
 
     questionArray = null;
-    $("n-question-list").html("");
+    // Deatch all nav question items
+    $(".n-question-list").children().each(function(a_index, a_element){$(a_element).remove() });
     quiz_difficulty = -1;
     quiz_length = 0;
+    nav_questionItem_array = [];
 
     quiz_timer = null;
 
